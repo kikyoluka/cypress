@@ -26,16 +26,22 @@ export const React18 = (projectRoot: string): Plugin => {
     transform (code, id) {
       const isUsingLegacyApi = usingReactWithLegacyAPI(projectRoot)
 
+      debug('is using legacy react version? %s', isUsingLegacyApi)
+
       if (!isUsingLegacyApi) {
         return
       }
 
       // TODO: Why do we need to check against cypress-react (dev mode, system tests)
       // AND cypress_react (production)?
-      const isCypressReact = ['cypress-react.esm-bundler.js', 'cypress_react.js'].includes(id)
+      const isCypressReact = id.includes('cypress-react.esm-bundler.js') || id.includes('cypress_react.js')
+
+      debug('is request cypress/react', isCypressReact)
 
       if (isCypressReact) {
         // remove problematic code via transform!
+        debug('transforming cypress/react to remove react-dom/client for backwards compat')
+
         return code.replace('react-dom/client', 'react-dom')
       }
     },
